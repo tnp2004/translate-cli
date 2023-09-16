@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/tnp2004/translate-cli/config"
+	"github.com/tnp2004/translate-cli/modules"
 )
 
 func envPath() string {
@@ -17,5 +17,7 @@ func envPath() string {
 
 func main() {
 	config := config.LoadConfig(envPath())
-	fmt.Println(config.App().ApiKey())
+
+	module := modules.InitModule(config)
+	module.Translate("hello world", "th", "en")
 }
