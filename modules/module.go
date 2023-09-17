@@ -39,16 +39,19 @@ func (m *module) setHeader(agent *fiber.Agent) {
 
 func (m *module) Translate(word, target, source string) {
 	payload := fmt.Sprintf("q=%v&target=%v&source=%v", word, target, source)
-	agent := fiber.Post(m.config.App().Url()).Body([]byte(payload))
+	agent := fiber.Post(m.config.App().Url())
+	agent.Body([]byte(payload))
 	m.setHeader(agent)
 	_, body, errs := agent.Bytes()
 	if errs != nil {
 		fmt.Println("Error: ", errs)
+		return
 	}
 
 	res := new(TranslateResponse)
 	if err := json.Unmarshal(body, res); err != nil {
 		fmt.Printf("json unmarshal failed: %v", err)
+		return
 	}
 
 	translateRes := res.Data.Translations
