@@ -21,51 +21,69 @@ func InitModule(config config.IConfig) IModule {
 }
 
 type TranslateResponse struct {
-	Data struct {
-		Translations []Translate `json:"translations"`
-	} `json:"data"`
+	DetectedLanguage struct {
+		Language string  `json:"language"`
+		Score    float64 `json:"score"`
+	} `json:"detectedLanguage"`
+	Translations []struct {
+		Text string `json:"text"`
+		To   string `json:"to"`
+	} `json:"translations"`
 }
 
 type Translate struct {
-	TranslatedText string `json:"translatedText"`
+	TranslatedText string `json:"Text"`
 }
 
 func (m *module) setHeader(agent *fiber.Agent) {
-	agent.Set("content-type", "application/x-www-form-urlencoded")
-	agent.Set("Accept-Encoding", "application/gzip")
+	agent.Set("Content-type", "application/json")
 	agent.Set("X-RapidAPI-Key", m.config.App().ApiKey())
 	agent.Set("X-RapidAPI-Host", m.config.App().ApiHost())
 }
 
 func (m *module) Translate(word, target, source string) {
-	payload := fmt.Sprintf("q=%v&target=%v&source=%v", word, target, source)
-	agent := fiber.Post(m.config.App().Url())
-	agent.Body([]byte(payload))
-	m.setHeader(agent)
-	_, body, errs := agent.Bytes()
-	if errs != nil {
-		fmt.Println("Error: ", errs)
+	endpoint := m.config.App().Url() + fmt.Sprintf("/translate?to%v=%v&api-version=3.0&profanityAction=NoAction&textType=plain", "%5B0%5D", target)
+
+	payload := []Translate{
+		{
+			TranslatedText: word,
+		},
+	}
+
+	payloadByte, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		fmt.Printf("json marshal failed: %v", err)
 		return
 	}
 
-	res := new(TranslateResponse)
-	if err := json.Unmarshal(body, res); err != nil {
+	agent := fiber.Post(endpoint)
+	m.setHeader(agent)
+	agent.Body(payloadByte)
+	_, body, errs := agent.Bytes()
+
+	if len(errs) != 0 {
+		for _, e := range errs {
+			fmt.Println("Error: ", e)
+			return
+		}
+	}
+
+	translationRes := new([]TranslateResponse)
+	if err := json.Unmarshal(body, translationRes); err != nil {
 		fmt.Printf("json unmarshal failed: %v", err)
 		return
 	}
 
-	translateRes := res.Data.Translations
-	if len(translateRes) == 1 {
-		fmt.Println(translateRes[0].TranslatedText)
-		return
-	}
+	// Print translation result
+	for i, t := range *translationRes {
+		fmt.Print("Translation: ")
 
-	for i, t := range translateRes {
-		if i == len(translateRes)-1 {
-			fmt.Printf("%v\n", t.TranslatedText)
+		// The end of translation result
+		if i == len(*translationRes)-1 {
+			fmt.Printf("%v\n", t.Translations[i].Text)
 			return
 		}
 
-		fmt.Printf("%v,", t.TranslatedText)
+		fmt.Printf("%v,", t.Translations[i].Text)
 	}
 }
