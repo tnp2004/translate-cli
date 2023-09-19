@@ -42,7 +42,7 @@ func (m *module) setHeader(agent *fiber.Agent) {
 }
 
 func (m *module) Translate(word, target, source string) {
-	endpoint := m.config.App().Url() + fmt.Sprintf("/translate?to%v=%v&api-version=3.0&profanityAction=NoAction&textType=plain", "%5B0%5D", target)
+	endpoint := m.config.App().Url() + fmt.Sprintf("/translate?to%v=%v&api-version=3.0&from=%v&profanityAction=NoAction&textType=plain", "%5B0%5D", target, source)
 
 	payload := []Translate{
 		{
@@ -59,7 +59,12 @@ func (m *module) Translate(word, target, source string) {
 	agent := fiber.Post(endpoint)
 	m.setHeader(agent)
 	agent.Body(payloadByte)
-	_, body, errs := agent.Bytes()
+	status, body, errs := agent.Bytes()
+
+	if status != 200 {
+		fmt.Printf("status code: %v something went wrong", status)
+		return
+	}
 
 	if len(errs) != 0 {
 		for _, e := range errs {

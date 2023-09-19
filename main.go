@@ -19,12 +19,23 @@ func main() {
 	if len(os.Args) == 1 {
 		fmt.Println("WARNING: Please input word for translate")
 		return
+	} else if len(os.Args) > 4 {
+		fmt.Println("WARNING: input should be less than 4")
+		return
 	}
 
 	word := os.Args[1]
-	targetLang := flag.String("t", "th", "use for target language")
-	sourceLang := flag.String("s", "en", "use for source language")
-	flag.Parse()
+	targetLang := "th"
+	sourceLang := "en"
+
+	if len(os.Args) >= 3 {
+		sourceLang = os.Args[2]
+	}
+
+	if len(os.Args) >= 4 {
+		targetLang = os.Args[3]
+	}
+
 	module := modules.InitModule(config)
-	module.Translate(word, *targetLang, *sourceLang)
+	module.Translate(word, targetLang, sourceLang)
 }
