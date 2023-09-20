@@ -1,11 +1,5 @@
 package config
 
-import (
-	"log"
-
-	"github.com/joho/godotenv"
-)
-
 type IConfig interface {
 	App() IAppConfig
 }
@@ -42,17 +36,12 @@ func (a *app) ApiHost() string {
 	return a.apiHost
 }
 
-func LoadConfig(path string) IConfig {
-	envMap, err := godotenv.Read(path)
-	if err != nil {
-		log.Fatalf("load dotenv error: %v", err)
-	}
-
+func LoadConfig() IConfig {
 	return &config{
 		app: &app{
-			url:     envMap["API_URL"],
-			apiKey:  envMap["RAPID_API_KEY"],
-			apiHost: envMap["RAPID_API_HOST"],
+			url:     "https://microsoft-translator-text.p.rapidapi.com",
+			apiKey:  "REPLACE YOUR X-RapidAPI-Key HERE",
+			apiHost: "microsoft-translator-text.p.rapidapi.com",
 		},
 	}
 }

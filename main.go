@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
@@ -9,12 +8,8 @@ import (
 	"github.com/tnp2004/translate-cli/modules"
 )
 
-func envPath() string {
-	return *flag.String("env", "./.env", "use for select specific env file")
-}
-
 func main() {
-	config := config.LoadConfig(envPath())
+	config := config.LoadConfig()
 
 	if len(os.Args) == 1 {
 		fmt.Println("WARNING: Please input word for translate")
