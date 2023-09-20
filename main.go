@@ -20,7 +20,10 @@ func main() {
 	}
 
 	word := os.Args[1]
+
+	// default target language
 	targetLang := "th"
+	// default source language
 	sourceLang := "en"
 
 	if len(os.Args) >= 3 {
